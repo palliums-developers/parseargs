@@ -29,7 +29,6 @@ def no_use_func_args(name, age, area):
 
 def init_args(pargs):
     pargs.append("help", "show arg list.")
-    pargs.append(show_funcs, "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append(none_args, "none args")
     pargs.append(none_default_args, "none default args")
@@ -38,9 +37,12 @@ def init_args(pargs):
     pargs.append(no_use_func_args, "here args name is not funcs arg", True, "fixed_name, fixed_age, fixed_area")
     pargs.append("use_func_args", "here args name is funcs arg", True, "name, age, area", callback = no_use_func_args)
 
+def test_narmal_args():
+    test_narmal(len(sys.argv) - 1, sys.argv[1:])
+
 def test_narmal(argc, argv):
     try:
-        print("start main")
+        print(f"start main argc = {argc} argv = {argv}")
         pargs = parseargs()
         init_args(pargs)
         pargs.show_help(argv)

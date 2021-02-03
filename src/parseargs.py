@@ -306,7 +306,7 @@ class parseargs:
         name = self.get_func_name(name)
         print(f"{name}({arglist_all})")
     
-    def show_help(self):
+    def show_args_list(self):
         funcs_list = [f"{name} : {index}" for index, name in self.get_funcs().items()]
         help_info = str(f" --help show help \n --fix FUNC_NAME ARGS. call functins(name : index) input name or index:.{'.'.join(funcs_list)} \n --main ARGS call test_narmal \n --func_args FUNC_NAME show founcs args") 
         help_info = help_info.replace(".", "\n\t")
@@ -314,7 +314,7 @@ class parseargs:
     
     def test(self, argv):
         if len(argv) == 1:
-            self.show_help()
+            self.show_args_list()
         elif argv[1] == "--func_args" and len(argv) == 3:
             show_func_args(argv[2])
         elif argv[1] == "--fix" and len(argv) >= 3:
@@ -323,4 +323,4 @@ class parseargs:
         elif argv[1] == "--main":
             self.test_narmal(len(argv) - 2, argv[2:])
         else: 
-            self.show_help()
+            self.show_args_list()
