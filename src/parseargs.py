@@ -101,7 +101,7 @@ class parseargs:
             if arg_defaults:
                 for i in range(len(arg_defaults)):
                     iarg = 0 - i - 1
-                    arglist_all[iarg] = f"{arglist_all[iarg]}={json.dumps(arg_defaults[iarg]) if arg_defaults[iarg] else None}"
+                    arglist_all[iarg] = f"{arglist_all[iarg]}={json.dumps(arg_defaults[iarg]) if arg_defaults[iarg] is not None else None}"
             arglist_all = ', '.join(arglist_all)
 
         
