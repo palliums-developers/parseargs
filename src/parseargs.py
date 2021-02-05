@@ -248,6 +248,7 @@ class parseargs:
     def append_func(self, func):
         if not self.is_func_or_method(func): raise Exception(f"{func} is not FunctionType or MethodType")
         func_name = func.__name__
+        if not self.globals: self.globals = {}
         if func_name not in self.globals: self.globals.update({func_name:func})
 
     def get_func_name(self, value):
