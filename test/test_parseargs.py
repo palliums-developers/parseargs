@@ -37,11 +37,14 @@ def init_args(pargs):
     pargs.append(no_use_func_args, "here args name is not funcs arg", True, "fixed_name, fixed_age, fixed_area")
     pargs.append("use_func_args", "here args name is funcs arg", True, "name, age, area", callback = no_use_func_args)
 
-def test_narmal_args():
-    test_narmal(len(sys.argv) - 1, sys.argv[1:])
+def get_arg_info():
+    argc = len(sys.argv) - 1
+    argv = sys.argv[1:]
+    return (argc, argv)
 
-def test_narmal(argc, argv):
+def test_narmal():
     try:
+        argc, argv = get_arg_info()
         print(f"start main argc = {argc} argv = {argv}")
         pargs = parseargs()
         init_args(pargs)
@@ -80,9 +83,10 @@ def append_args(pargs):
     pargs.append("twice_args", "first append.")
     pargs.append("twice_args", "sencond append.")
 
-def test_twice_append_args(argc, argv):
+def test_twice_append_args():
     try:
-        print("start main")
+        argc, argv = get_arg_info()
+        print(f"start main argc = {argc} argv = {argv}")
         pargs = parseargs()
         init_args(pargs)
         append_args(pargs)
