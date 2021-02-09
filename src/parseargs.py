@@ -84,11 +84,11 @@ class parseargs:
 
         if arg[-1] == "-": short_arg += "-";
 
-        key = self.__short_arg_names.get(short_arg)
+        short_name = self.get_name(short_arg)
+        key = self.__short_arg_names.get(short_name)
         if not key:
             return short_arg
 
-        short_name = self.get_name(short_arg)
         name = self.get_name(arg)
         while short_name in self.__short_arg_names or short_name in self.__args:
             index = self.__short_arg_names.get("index_short_arg", 0)
