@@ -13,6 +13,7 @@ name="parseargs"
 
 class parseargs:
     __args = {}
+    __short_arg_names = {}
     __unique = []
 
     class argtype(Enum):
@@ -29,6 +30,7 @@ class parseargs:
 
     def clear(self):
         self.__args = {}
+        self.__short_arg_names = {}
         self.__unique = []
 
     def appendunique(self, opts_unique):
@@ -50,11 +52,14 @@ class parseargs:
 
     def isvalid(self, name):
         arg = name[2:]
-        return arg in self.__args.keys()
+        return arg in self.__args.keys() or arg in self.__short_arg_names
 
     def hasarg(self, name):
         for key in self.__args:
             arg = self.__args[key]["key"]
+            if arg.find('-') >= 0 and name[2:] == arg.replace('-', ''):
+                return True
+            arg = self.__args[key]["skey"]
             if arg.find('-') >= 0 and name[2:] == arg.replace('-', ''):
                 return True
         return False
@@ -72,6 +77,25 @@ class parseargs:
             self.__args[name]["callback"](*args)
         else:
             self.__args[name]["callback"]()
+
+    def make_short_arg(self, arg):
+        heads = [head[0] for head in arg.split("_")]
+        short_arg = "".join(heads)
+
+        if arg[-1] == "-": short_arg += "-";
+
+        key = self.__short_arg_names.get(short_arg)
+        if not key:
+            return short_arg
+
+        short_name = self.get_name(short_arg)
+        name = self.get_name(arg)
+        while short_name in self.__short_arg_names or short_name in self.__args:
+            index = self.__short_arg_names.get("index_short_arg", 0)
+            short_arg = f"{index}{short_arg}"
+            self.__short_arg_names.update({"index_short_arg": index + 1})
+            short_name = self.get_name(short_arg)
+        return short_arg
 
     def append(self, name, desc, hasarg = False, arglist = None, optional_arglist = None, priority = 100, argtype = argtype.LIST, callback = None):
 
@@ -115,7 +139,12 @@ class parseargs:
             key = arg_name
             value = f"desc: {desc} format: --{arg_name}"
 
+        skey = self.make_short_arg(key)
+        sname = self.get_name(skey)
+        self.__short_arg_names.update({sname: arg_name})
         self.__args[arg_name] = {"key": key, \
+                "skey": skey, \
+                "sname": sname, \
                 "value": value, \
                 "required": arglist, \
                 "required_count": len(arglist) if arglist else 0, \
@@ -133,7 +162,8 @@ class parseargs:
 
     def show_args(self):
         for key in list(self.__args.keys()):
-            print("{}{} \n\t\t\t\t{}".format("--", key, self.__args[key]["value"].replace('\n', '')))
+            short_name = self.__args[key]["sname"]
+            print("{} {} {} \n\t\t\t\t\t{}".format(f"--{key}", "|" if short_name else "", f"--{short_name}" if short_name else "", self.__args[key]["value"].replace('\n', '')))
         sys.exit(2)
 
     def exit_error_opt(self, opt):
@@ -142,7 +172,6 @@ class parseargs:
 
     def __show_arg_info(self, info):
         print(info)
-
 
     def list_arg_name(self):
         return [ "--" + arg.replace('-', "") for arg in self.args.keys()]
@@ -172,12 +201,19 @@ class parseargs:
 
         sys.exit(2)
 
+    def get_std_name(self, name):
+        return self.__short_arg_names.get(name, name)
+
     def __sort_opts(self, opts):
         sorted_opts = []
         for opt in opts:
+            src_name = opt
             if isinstance(opt, tuple):
-                opt_name = opt[0]
-            args = self.__args[self.get_name(opt_name)]
+                src_name = self.get_name(opt[0])
+            std_name = self.get_std_name(src_name)
+            args = self.__args[std_name]
+            if isinstance(opt, tuple):
+                opt = (opt[0].replace(src_name, std_name), opt[1])
             for i, sopt in enumerate(sorted_opts):
                 if isinstance(sopt, tuple):
                     sopt_name = sopt[0]
@@ -194,7 +230,9 @@ class parseargs:
         self.check_unique(names)
 
     def getopt(self, argv):
-        opts, err_msg = getopt.getopt(argv, None, [arg["key"].replace('-', "=") for _, arg in self.__args.items()])
+        inputs = [arg["key"].replace('-', "=") for _, arg in self.__args.items()]
+        inputs.extend([arg["skey"].replace('-', "=") for _, arg in self.__args.items() if arg["skey"]])
+        opts, err_msg = getopt.getopt(argv, None, inputs)
         opts = self.__sort_opts(opts)
         self.check_opts(opts)
         return (opts, err_msg)
