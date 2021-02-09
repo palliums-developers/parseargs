@@ -204,16 +204,23 @@ class parseargs:
     def get_std_name(self, name):
         return self.__short_arg_names.get(name, name)
 
+    def __to_std_opts(self, opts):
+        std_opts = []
+        for opt in opts:
+            if isinstance(opt, tuple):
+                src_name = self.get_name(opt[0])
+                std_name = self.get_std_name(src_name)
+                opt = (opt[0].replace(src_name, std_name), opt[1])
+            std_opts.append(opt)    
+        return std_opts
+
     def __sort_opts(self, opts):
         sorted_opts = []
         for opt in opts:
-            src_name = opt
+            opt_name = opt
             if isinstance(opt, tuple):
-                src_name = self.get_name(opt[0])
-            std_name = self.get_std_name(src_name)
-            args = self.__args[std_name]
-            if isinstance(opt, tuple):
-                opt = (opt[0].replace(src_name, std_name), opt[1])
+                opt_name = self.get_name(opt[0])
+            args = self.__args[opt_name]
             for i, sopt in enumerate(sorted_opts):
                 if isinstance(sopt, tuple):
                     sopt_name = sopt[0]
@@ -233,6 +240,7 @@ class parseargs:
         inputs = [arg["key"].replace('-', "=") for _, arg in self.__args.items()]
         inputs.extend([arg["skey"].replace('-', "=") for _, arg in self.__args.items() if arg["skey"]])
         opts, err_msg = getopt.getopt(argv, None, inputs)
+        opts = self.__to_std_opts(opts)
         opts = self.__sort_opts(opts)
         self.check_opts(opts)
         return (opts, err_msg)
