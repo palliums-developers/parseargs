@@ -5,7 +5,6 @@ import json
 sys.path.append("..")
 import traceback
 import datetime
-#from .models import BtcRpc
 from enum import Enum
 
 #module name
