@@ -22,6 +22,7 @@ class parseargs:
 
     def __init__(self, globals = None):
         self.globals = globals
+        self.__must_include = []
         pass
 
     def __del__(self):
@@ -295,12 +296,16 @@ class parseargs:
         func_name = func.__name__
         if not self.globals: self.globals = {}
         if func_name not in self.globals: self.globals.update({func_name:func})
+        self.__must_include.append(func_name)
 
     def get_func_name(self, value):
         names = self.get_funcs()
         if value.isnumeric():
             value= names[int(value)]
         return value
+
+    def __is_starts(self, name):
+        return not self.__starts or name.startswith(self.__starts) 
 
     def get_funcs(self):
         func_names = {} 
@@ -310,6 +315,9 @@ class parseargs:
         self.append_func(self.show_funcs)
         self.append_func(self.show_func_args)
         for key, value in self.globals.items():
+            if not self.__is_starts(key) and key not in self.__must_include:
+                continue
+
             if self.is_func_or_method(value) and key not in no_includes:
                 func_names.update({index: key})
                 index += 1
@@ -358,7 +366,8 @@ class parseargs:
         help_info = help_info.replace(".", "\n\t")
         print(help_info)
     
-    def test(self, argv):
+    def test(self, argv, starts = "test"):
+        self.__starts = starts
         if len(argv) == 1:
             self.show_args_list()
         elif argv[1] == "--func_args" and len(argv) == 3:
