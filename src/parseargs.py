@@ -20,9 +20,10 @@ class parseargs:
         STR  = 0x02
         JSON = 0x03
 
-    def __init__(self, globals = None):
+    def __init__(self, globals = None, exit = True):
         self.globals = globals
         self.__must_include = []
+        self.__exit = exit
         pass
 
     def __del__(self):
@@ -160,15 +161,19 @@ class parseargs:
         self.__args.pop(name)
         self.__unique.remove(name)
 
+    def exit(self, code = 2):
+        if self.__exit:
+            sys.exit(code)
+
     def show_args(self):
         for key in list(self.__args.keys()):
             short_name = self.__args[key]["sname"]
             print("{} {} {} \n\t\t\t\t\t{}".format(f"--{key}", "|" if short_name else "", f"--{short_name}" if short_name else "", self.__args[key]["value"].replace('\n', '')))
-        sys.exit(2)
+        self.exit(2)
 
     def exit_error_opt(self, opt):
         print(self.__args[self.get_name(opt)]["value"])
-        sys.exit(2)
+        self.exit(2)
 
     def __show_arg_info(self, info):
         print(info)
@@ -179,9 +184,11 @@ class parseargs:
     def show_help(self, args):
         if args is not None and len(args) > 0 and args[0] == "--help":
             self.show_args()
+            return 
 
         if args is None or len(args) == 0:
             self.show_args()
+            return 
 
         if args is None or len(args) != 2 or args[0] != "help" :
             find = False
@@ -191,6 +198,7 @@ class parseargs:
                     continue
                 if self.isvalid(name) == False:
                     self.show_args()
+                    return 
                 if self.hasarg(name) == True:
                     find = True
             return
@@ -199,7 +207,7 @@ class parseargs:
 
         self.__show_arg_info("--{} \n\t{}".format(name, self.__args[name]["value"].replace("format:", "\n\tformat:")))
 
-        sys.exit(2)
+        self.exit(2)
 
     def get_std_name(self, name):
         return self.__short_arg_names.get(name, name)
