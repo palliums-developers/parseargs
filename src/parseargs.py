@@ -48,7 +48,7 @@ class parseargs:
                     count += 1
                 if count > 1:
                     print(f"found Mutually exclusive parameters ({uni})")
-                    sys.exit(2)
+                    self.exit(2)
 
 
     def isvalid(self, name):
@@ -184,13 +184,13 @@ class parseargs:
     def show_help(self, args):
         if args is not None and len(args) > 0 and args[0] == "--help":
             self.show_args()
-            return 
+            return True
 
         if args is None or len(args) == 0:
             self.show_args()
-            return 
+            return True
 
-        if args is None or len(args) != 2 or args[0] != "help" :
+        if args is not None or len(args) != 2 or args[0] != "help" :
             find = False
             for name in args:
                 if find == True:
@@ -198,16 +198,17 @@ class parseargs:
                     continue
                 if self.isvalid(name) == False:
                     self.show_args()
-                    return 
+                    return True
                 if self.hasarg(name) == True:
                     find = True
-            return
+            return False
 
         name = args[1]
 
         self.__show_arg_info("--{} \n\t{}".format(name, self.__args[name]["value"].replace("format:", "\n\tformat:")))
 
         self.exit(2)
+        return True
 
     def get_std_name(self, name):
         return self.__short_arg_names.get(name, name)
