@@ -73,11 +73,14 @@ class parseargs:
 
     def callback(self, opt, *args):
         name = self.get_name(opt)
-        self.exit_check_opt_arg_min(opt, args, self.__args[name]["min_args"])
+        if not self.exit_check_opt_arg_min(opt, args, self.__args[name]["min_args"]):
+            return False
+
         if self.__args[name]["hasarg"]:
             self.__args[name]["callback"](*args)
         else:
             self.__args[name]["callback"]()
+        return True
 
     def make_short_arg(self, arg):
         heads = [head[0] for head in arg.split("_")]
@@ -287,6 +290,8 @@ class parseargs:
             counts.append(arg_count)
         if count not in counts:
             self.exit_error_opt(opt)
+            return False
+        return True
 
     def exit_check_opt_arg_min(self, opt, arg, arg_count):
         if not isinstance(arg, str):
@@ -296,6 +301,8 @@ class parseargs:
 
         if count < arg_count:
             self.exit_error_opt(opt)
+            return False
+        return True
 
     def is_func_or_method(self, func):
         return isinstance(func, types.MethodType) or isinstance(func, types.FunctionType)
